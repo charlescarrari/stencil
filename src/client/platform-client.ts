@@ -7,8 +7,10 @@ import { createDomApi } from '../core/renderer/dom-api';
 import { createRendererPatch } from '../core/renderer/patch';
 import { createVNodesFromSsr } from '../core/renderer/ssr';
 import { createQueueClient } from './queue-client';
+import { CustomStyle } from './css-shim/custom-style';
 import { ENCAPSULATION, SSR_VNODE_ID } from '../util/constants';
 import { h } from '../core/renderer/h';
+import { initCssVarShim } from './css-shim/init-css-shim';
 import { initHostConstructor } from '../core/instance/init-host';
 import { parseComponentMeta, parseComponentLoaders } from '../util/data-parse';
 import { proxyController } from '../core/instance/proxy';
@@ -203,6 +205,26 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
   }
 
 
+  let customStyle: CustomStyle;
+  let requestBundleQueue: Function[];
+  if (Build.cssVarShim) {
+    customStyle = new CustomStyle(win);
+
+    // keep a queue of all the request bundle callbacks to run
+    requestBundleQueue = [];
+
+    initCssVarShim(win, doc, customStyle, () => {
+      // loaded all the css, let's run all the request bundle callbacks
+      while (requestBundleQueue.length) {
+        requestBundleQueue.shift()();
+      }
+
+      // set to null to we know we're loaded
+      requestBundleQueue = null;
+    });
+  }
+
+
   function loadBundle(cmpMeta: ComponentMeta, elm: HostElement, cb: Function, bundleId?: string): void {
     if (Build.es5) {
       bundleId = (cmpMeta.bundleIds[elm.mode] || (cmpMeta.bundleIds as any))[1];
@@ -219,8 +241,25 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
       // and add it to the callbacks to fire when it has loaded
       (bundleCallbacks[bundleId] = bundleCallbacks[bundleId] || []).push(cb);
 
-      // figure out which bundle to request and kick it off
-      requestBundle(cmpMeta, bundleId);
+      // when to request the bundle depends is we're using the css shim or not
+      if (Build.cssVarShim) {
+        // using css shim, so we've gotta wait until it's ready
+        if (requestBundleQueue) {
+          // add this to the loadBundleQueue to run when css is ready
+          requestBundleQueue.push(() => {
+            requestBundle(cmpMeta, bundleId);
+          });
+
+        } else {
+          // css already all loaded
+          requestBundle(cmpMeta, bundleId);
+        }
+
+      } else {
+        // not using css shim, so no need to wait on css shim to finish
+        // figure out which bundle to request and kick it off
+        requestBundle(cmpMeta, bundleId);
+      }
     }
   }
 
@@ -292,6 +331,12 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
 
             const insertReferenceNode = styleContainerNode.querySelector('[data-visibility]');
             domApi.$insertBefore(styleContainerNode, styleElm, (insertReferenceNode && insertReferenceNode.nextSibling) || styleContainerNode.firstChild);
+
+            if (Build.cssVarShim) {
+              // using the css shim, so let's parse through
+              // and update this style element w/ css var properties
+              customStyle.addStyle(styleElm);
+            }
 
             // remember we don't need to do this again for this element
             appliedStyles[templateElm.id] = true;
