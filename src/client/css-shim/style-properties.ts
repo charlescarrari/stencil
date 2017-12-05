@@ -83,11 +83,8 @@ export class StyleProperties {
   // (1) a literal value like: red or 5px;
   // (2) a variable value like: var(--a), var(--a, red), or var(--a, --b) or
   // var(--a, var(--b));
-  // (3) a literal mixin value like { properties }. Each of these properties
-  // can have values that are: (a) literal, (b) variables, (c) @apply mixins.
   private valueForProperty(property: any, props: any) {
     // case (1) default
-    // case (3) defines a mixin and we have to reify the internals
     if (property) {
       if (property.indexOf(';') >= 0) {
         property = this.valueForProperties(property, props);
@@ -103,12 +100,6 @@ export class StyleProperties {
           if (!propertyValue || propertyValue === 'initial') {
             // fallback may be --a or var(--a) or literal
             propertyValue = this.valueForProperty(props[fallback] || fallback, props) || fallback;
-
-          } else if (propertyValue === 'apply-shim-inherit') {
-            // CSS build will replace `inherit` with `apply-shim-inherit`
-            // for use with native css variables.
-            // Since we have full control, we can use `inherit` directly.
-            propertyValue = 'inherit';
           }
 
           return prefix + (propertyValue || '') + suffix;
