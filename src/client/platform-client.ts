@@ -185,21 +185,36 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
       let templateElm: HTMLTemplateElement;
 
       for (var i = 0; i < args.length; i += 2) {
-        // create the template element which will hold the styles
-        // adding it to the dom via <template> so that we can
-        // clone this for each potential shadow root that will need these styles
-        // otherwise it'll be cloned and added to the entire document
-        // but that's for the renderer to figure out later
-        styleTemplates[args[i]] = templateElm = domApi.$createElement('template');
 
-        // add the style text to the template element
-        templateElm.innerHTML = `<style>${args[i + 1]}</style>`;
+        if (Build.cssVarShim) {
+          // using the css shim
+          // so instead of creating actual template elements
+          // let's just store the template as a string instead
+          // same browsers that require css shim also have issues w/ templates
+          styleTemplates[args[i]] = {
+            id: `tmp-${args[i]}`,
+            content: args[i + 1]
+          };
 
-        // give it an unique id
-        templateElm.id = `tmp-${args[i]}`;
+        } else {
+          // create the template element which will hold the styles
+          // adding it to the dom via <template> so that we can
+          // clone this for each potential shadow root that will need these styles
+          // otherwise it'll be cloned and added to the document
+          // but that's for the renderer to figure out later
+          // let's create a new template element
+          styleTemplates[args[i]] = (templateElm as any) = domApi.$createElement('template') as any;
 
-        // add our new element to the head
-        domApi.$appendChild(domApi.$head, templateElm);
+          // add the style text to the template element's innerHTML
+          templateElm.innerHTML = `<style>${args[i + 1]}</style>`;
+
+          // give the template element a unique id
+          templateElm.id = `tmp-${args[i]}`;
+
+          // add our new template element to the head
+          // so it can be cloned later
+          domApi.$appendChild(domApi.$head, templateElm);
+        }
       }
     };
   }
@@ -326,16 +341,26 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
           const appliedStyles = ((styleContainerNode as HostElement)._appliedStyles = (styleContainerNode as HostElement)._appliedStyles || {});
 
           if (!appliedStyles[templateElm.id]) {
-            // we haven't added these styles to this element yet
-            const styleElm = templateElm.content.cloneNode(true) as HTMLStyleElement;
-
-            const insertReferenceNode = styleContainerNode.querySelector('[data-visibility]');
-            domApi.$insertBefore(styleContainerNode, styleElm, (insertReferenceNode && insertReferenceNode.nextSibling) || styleContainerNode.firstChild);
 
             if (Build.cssVarShim) {
               // using the css shim, so let's parse through
               // and update this style element w/ css var properties
+              const styleElm = domApi.$createElement('style');
+              styleElm.innerHTML = templateElm.content;
+
+              const insertReferenceNode = styleContainerNode.querySelector('[data-visibility]');
+              domApi.$insertBefore(styleContainerNode, styleElm, (insertReferenceNode && insertReferenceNode.nextSibling) || styleContainerNode.firstChild);
+
+              // add the style elm to the css shim
               customStyle.addStyle(styleElm);
+
+            } else {
+              // not using the css shim
+              // we haven't added these styles to this element yet
+              const styleElm = templateElm.content.cloneNode(true) as HTMLStyleElement;
+
+              const insertReferenceNode = styleContainerNode.querySelector('[data-visibility]');
+              domApi.$insertBefore(styleContainerNode, styleElm, (insertReferenceNode && insertReferenceNode.nextSibling) || styleContainerNode.firstChild);
             }
 
             // remember we don't need to do this again for this element
@@ -351,5 +376,8 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
 
 
 export interface StyleTemplates {
-  [tag: string]: HTMLTemplateElement;
+  [tag: string]: {
+    id: string;
+    content: any;
+  };
 }
