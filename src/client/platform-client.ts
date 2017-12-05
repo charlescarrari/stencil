@@ -186,7 +186,7 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
 
       for (var i = 0; i < args.length; i += 2) {
 
-        if (Build.cssVarShim) {
+        if (Build.cssVarShim && !customStyle.supportsCssVars) {
           // using the css shim
           // so instead of creating actual template elements
           // let's just store the template as a string instead
@@ -257,7 +257,7 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
       (bundleCallbacks[bundleId] = bundleCallbacks[bundleId] || []).push(cb);
 
       // when to request the bundle depends is we're using the css shim or not
-      if (Build.cssVarShim) {
+      if (Build.cssVarShim && !customStyle.supportsCssVars) {
         // using css shim, so we've gotta wait until it's ready
         if (requestBundleQueue) {
           // add this to the loadBundleQueue to run when css is ready
@@ -342,7 +342,7 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
 
           if (!appliedStyles[templateElm.id]) {
 
-            if (Build.cssVarShim) {
+            if (Build.cssVarShim && !customStyle.supportsCssVars) {
               // using the css shim, so let's parse through
               // and update this style element w/ css var properties
               const styleElm = domApi.$createElement('style');

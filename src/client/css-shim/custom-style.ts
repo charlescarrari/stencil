@@ -10,14 +10,19 @@ export class CustomStyle {
   private enqueued = false;
   private flushCallbacks: Function[] = [];
   private styleProperties: StyleProperties;
+  supportsCssVars: boolean;
 
 
   constructor(private win: Window, doc: Document) {
-    this.documentOwner = doc.documentElement;
-    let ast = new StyleNode();
-    ast.rules = [];
-    this.documentOwnerStyleInfo = StyleInfo.set(this.documentOwner, new StyleInfo(ast));
-    this.styleProperties = new StyleProperties(win);
+    this.supportsCssVars = !!((win as any).CSS && (win as any).CSS.supports && (win as any).CSS.supports('--t', 0));
+
+    if (!this.supportsCssVars) {
+      this.documentOwner = doc.documentElement;
+      let ast = new StyleNode();
+      ast.rules = [];
+      this.documentOwnerStyleInfo = StyleInfo.set(this.documentOwner, new StyleInfo(ast));
+      this.styleProperties = new StyleProperties(win);
+    }
   }
 
   private flushCustomStyles() {

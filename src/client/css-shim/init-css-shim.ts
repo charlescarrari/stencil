@@ -2,7 +2,7 @@ import { CustomStyle } from './custom-style';
 
 
 export function initCssVarShim(win: any, doc: Document, customStyle: CustomStyle, callback: Function) {
-  if (win.CSS && win.CSS.supports && win.CSS.supports('--t', 0)) {
+  if (customStyle.supportsCssVars) {
     callback();
 
   } else {
