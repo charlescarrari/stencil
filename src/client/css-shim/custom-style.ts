@@ -4,19 +4,19 @@ import * as StyleUtil from './style-util';
 
 
 export class CustomStyle {
-  private _documentOwner: HTMLElement;
-  private enqueued = false;
   private customStyles: StyleElement[] = [];
-  private _documentOwnerStyleInfo: any;
-  private styleProperties: StyleProperties;
+  private documentOwner: HTMLElement;
+  private documentOwnerStyleInfo: any;
+  private enqueued = false;
   private flushCallbacks: Function[] = [];
+  private styleProperties: StyleProperties;
 
 
-  constructor(private win: Window) {
-    this._documentOwner = win.document.documentElement;
+  constructor(private win: Window, doc: Document) {
+    this.documentOwner = doc.documentElement;
     let ast = new StyleNode();
     ast.rules = [];
-    this._documentOwnerStyleInfo = StyleInfo.set(this._documentOwner, new StyleInfo(ast));
+    this.documentOwnerStyleInfo = StyleInfo.set(this.documentOwner, new StyleInfo(ast));
     this.styleProperties = new StyleProperties(win);
   }
 
@@ -28,8 +28,8 @@ export class CustomStyle {
       return;
     }
 
-    this._updateProperties(this._documentOwner, this._documentOwnerStyleInfo);
-    this._applyCustomStyles(customStyles);
+    this.updateProperties(this.documentOwner, this.documentOwnerStyleInfo);
+    this.applyCustomStyles(customStyles);
     this.enqueued = false;
 
     while (this.flushCallbacks.length) {
@@ -37,18 +37,18 @@ export class CustomStyle {
     }
   }
 
-  private _applyCustomStyles(customStyles: any) {
+  private applyCustomStyles(customStyles: any) {
     for (let i = 0; i < customStyles.length; i++) {
       let c = customStyles[i];
       let s = this.getStyleForCustomStyle(c);
       if (s) {
-        this.styleProperties.applyCustomStyle(s, this._documentOwnerStyleInfo.styleProperties);
+        this.styleProperties.applyCustomStyle(s, this.documentOwnerStyleInfo.styleProperties);
       }
     }
   }
 
-  private _updateProperties(host: any, styleInfo: any) {
-    let owner = this._documentOwner;
+  private updateProperties(host: any, styleInfo: any) {
+    let owner = this.documentOwner;
     let ownerStyleInfo = StyleInfo.get(owner);
     let ownerProperties = ownerStyleInfo.styleProperties;
     let props = Object.create(ownerProperties || null);
@@ -125,7 +125,7 @@ export class CustomStyle {
 
   private transformCustomStyleForDocument(style: StyleElement) {
     let ast = StyleUtil.rulesForStyle(style);
-    this._documentOwnerStyleInfo.styleRules.rules.push(ast);
+    this.documentOwnerStyleInfo.styleRules.rules.push(ast);
   }
 }
 

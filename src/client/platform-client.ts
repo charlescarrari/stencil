@@ -223,7 +223,7 @@ export function createPlatformClient(Context: CoreContext, App: AppGlobal, win: 
   let customStyle: CustomStyle;
   let requestBundleQueue: Function[];
   if (Build.cssVarShim) {
-    customStyle = new CustomStyle(win);
+    customStyle = new CustomStyle(win, doc);
 
     // keep a queue of all the request bundle callbacks to run
     requestBundleQueue = [];

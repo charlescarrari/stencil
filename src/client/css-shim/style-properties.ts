@@ -8,7 +8,7 @@ export class StyleProperties {
   constructor(private win: Window) {
     this.matchesSelector = ((p) => p.matches || p.matchesSelector ||
       p.mozMatchesSelector || p.msMatchesSelector ||
-      p.oMatchesSelector || p.webkitMatchesSelector)((win as any).Element.prototype);
+      p.webkitMatchesSelector)((win as any).Element.prototype);
   }
 
   // decorate a single rule with property info

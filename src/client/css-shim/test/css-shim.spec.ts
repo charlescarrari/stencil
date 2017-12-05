@@ -5,7 +5,7 @@ import { mockWindow } from '../../../testing/mocks';
 describe('css-shim', () => {
 
   it('should set value in second addCustomStyle with async tick', async () => {
-    const customStyle = new CustomStyle(window);
+    const customStyle = new CustomStyle(window, document);
 
     const rootElm = style(`
     html {
@@ -31,7 +31,7 @@ describe('css-shim', () => {
   });
 
   it('should set value in second addCustomStyle w/out async tick', async () => {
-    const customStyle = new CustomStyle(window);
+    const customStyle = new CustomStyle(window, document);
 
     const rootElm = style(`
     html {
@@ -57,7 +57,7 @@ describe('css-shim', () => {
   });
 
   it('should set value in same script in different rule', async () => {
-    const customStyle = new CustomStyle(window);
+    const customStyle = new CustomStyle(window, document);
 
     const styleElm = style(`
     html {
@@ -83,7 +83,7 @@ describe('css-shim', () => {
   });
 
   it('should set value in from fallback', async () => {
-    const customStyle = new CustomStyle(window);
+    const customStyle = new CustomStyle(window, document);
 
     const styleElm = style(`
       html {
@@ -104,7 +104,7 @@ describe('css-shim', () => {
   });
 
   it('should set value in same script in different rule and remove var only rule', async () => {
-    const customStyle = new CustomStyle(window);
+    const customStyle = new CustomStyle(window, document);
 
     const styleElm = style(`
       html {
@@ -127,7 +127,7 @@ describe('css-shim', () => {
   });
 
   it('should set value in same script in same rule', async () => {
-    const customStyle = new CustomStyle(window);
+    const customStyle = new CustomStyle(window, document);
 
     const styleElm = style(`
       html {
@@ -149,7 +149,7 @@ describe('css-shim', () => {
   });
 
   it('should set value in transform', async () => {
-    const customStyle = new CustomStyle(window);
+    const customStyle = new CustomStyle(window, document);
 
     const styleElm = style(`
       html {
@@ -172,7 +172,7 @@ describe('css-shim', () => {
   });
 
   it('should set value in keyframe animation', async () => {
-    const customStyle = new CustomStyle(window);
+    const customStyle = new CustomStyle(window, document);
 
     const styleElm = style(`
       html {
@@ -202,7 +202,7 @@ describe('css-shim', () => {
       return { matches: false
       };
     };
-    const customStyle = new CustomStyle(window);
+    const customStyle = new CustomStyle(window, document);
 
     const styleElm = style(`
       html {
@@ -225,7 +225,7 @@ describe('css-shim', () => {
       return { matches: true
       };
     };
-    const customStyle = new CustomStyle(window);
+    const customStyle = new CustomStyle(window, document);
 
     const styleElm = style(`
       html {
@@ -256,7 +256,7 @@ describe('css-shim', () => {
       return { matches: true
       };
     };
-    const customStyle = new CustomStyle(window);
+    const customStyle = new CustomStyle(window, document);
 
     const styleElm = style(`
       html {
