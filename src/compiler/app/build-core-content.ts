@@ -383,6 +383,7 @@ var RESERVED_PROPERTIES: string[] = [
   'src',
   'style',
   'tagName',
+  'text',
   'textContent',
   'timeRemaining',
   'warn',

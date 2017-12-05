@@ -23,7 +23,7 @@ export class StyleProperties {
       // TODO(sorvell): workaround parser seeing mixins as additional rules
       rule.rules = null;
     }
-    info.cssText = this.collectCssText(rule);
+    info.cssText = rule.parsedCssText;
     rule.propertyInfo = info;
     return info;
   }
@@ -54,17 +54,6 @@ export class StyleProperties {
       }
       return a;
     }
-  }
-
-  // returns cssText of properties that consume variables/mixins
-  private collectCssText(rule: StyleNode) {
-    return this.collectConsumingCssText(rule.parsedCssText);
-  }
-
-  // NOTE: we support consumption inside mixin assignment
-  // but not production, so strip out {...}
-  private collectConsumingCssText(cssText: string) {
-    return cssText.replace(VAR_ASSIGN, '');
   }
 
   // turns custom properties into realized values.
